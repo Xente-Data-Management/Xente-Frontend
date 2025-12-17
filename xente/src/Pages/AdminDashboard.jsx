@@ -3,12 +3,13 @@ import {
   Users, LogOut, BarChart3, TrendingUp, Mail, MapPin, 
   Menu, X, Home, Search, Calendar, Download, 
   RefreshCw, UserPlus, Trophy, AlertCircle, 
-  Edit2, Trash2, ChevronRight
+  Edit2, Trash2, ChevronRight, Shield, Briefcase
 } from 'lucide-react';
 import ApiService from '../services/api';
 import AmbassadorsPage from '../Pages/AmbassadorsPage';
+import AdminsPage from '../Pages/AdminsPage'; // Ensure you create this file from the previous snippet
 
-// --- Reusable UI Components (Button, StatCard, TopPerformerCard) ---
+// --- Reusable UI Components ---
 const Button = ({ children, variant = 'primary', className = '', icon: Icon, loading, ...props }) => {
   const variants = {
     primary: 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg shadow-orange-500/20',
@@ -132,19 +133,32 @@ export const AdminDashboard = ({ currentUser, onLogout }) => {
 
   return (
     <div className="flex min-h-screen bg-black text-gray-200 font-sans">
+      {/* Sidebar Navigation */}
       <aside className={`fixed lg:static inset-y-0 left-0 w-64 bg-gray-950 border-r border-gray-800 z-50 transform transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         <div className="flex flex-col h-full p-6">
           <div className="flex items-center gap-3 mb-10">
-            <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20"><Users className="text-white w-6 h-6" /></div>
+            <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
+              <Shield className="text-white w-6 h-6" />
+            </div>
             <span className="text-white font-bold text-xl">Admin<span className="text-orange-500">HQ</span></span>
           </div>
+          
           <nav className="flex-1 space-y-2">
-            {[{ id: 'dashboard', label: 'Overview', icon: Home }, { id: 'ambassadors', label: 'Ambassadors', icon: Users }].map(item => (
-              <button key={item.id} onClick={() => { setActiveTab(item.id); setIsSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === item.id ? 'bg-orange-500 text-white shadow-lg' : 'text-gray-400 hover:bg-gray-900'}`}>
+            {[
+              { id: 'dashboard', label: 'Overview', icon: Home },
+              { id: 'ambassadors', label: 'Ambassadors', icon: Users },
+              { id: 'admins', label: 'System Admins', icon: Briefcase } // Added Admin Tab
+            ].map(item => (
+              <button 
+                key={item.id} 
+                onClick={() => { setActiveTab(item.id); setIsSidebarOpen(false); }} 
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === item.id ? 'bg-orange-500 text-white shadow-lg' : 'text-gray-400 hover:bg-gray-900'}`}
+              >
                 <item.icon className="w-5 h-5" /> {item.label}
               </button>
             ))}
           </nav>
+          
           <div className="pt-6 border-t border-gray-800">
             <Button variant="danger" className="w-full" icon={LogOut} onClick={onLogout}>Sign Out</Button>
           </div>
@@ -157,16 +171,19 @@ export const AdminDashboard = ({ currentUser, onLogout }) => {
             <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden text-gray-400"><Menu /></button>
             <h2 className="text-lg font-semibold text-white uppercase tracking-wider">{activeTab}</h2>
           </div>
-          <Button onClick={() => { setSelectedAmbassadorForModal(null); setModalMode('create'); setShowModal(true); }} icon={UserPlus}>Add Ambassador</Button>
+          {activeTab !== 'admins' && (
+            <Button onClick={() => { setSelectedAmbassadorForModal(null); setModalMode('create'); setShowModal(true); }} icon={UserPlus}>Add Ambassador</Button>
+          )}
         </header>
 
         <main className="p-8 overflow-y-auto flex-1 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-gray-900/20 via-black to-black">
           {error && <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-500"><AlertCircle className="w-5 h-5" />{error}</div>}
 
-          {loading ? (
+          {loading && activeTab !== 'admins' ? (
             <div className="flex h-full items-center justify-center flex-col gap-4 text-gray-500"><RefreshCw className="animate-spin text-orange-500" /> Syncing system...</div>
           ) : (
             <div className="max-w-7xl mx-auto">
+              {/* --- DASHBOARD TAB --- */}
               {activeTab === 'dashboard' && (
                 <div className="space-y-8 animate-in fade-in duration-500">
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -213,9 +230,7 @@ export const AdminDashboard = ({ currentUser, onLogout }) => {
                             <td className="px-6 py-4 text-sm text-gray-400">{amb.region}</td>
                             <td className="px-6 py-4 text-center font-bold text-orange-500">{amb.totalStaff || 0}</td>
                             <td className="px-6 py-4 text-right opacity-0 group-hover:opacity-100 transition-opacity">
-                              <div className="flex justify-end gap-2">
-                                <button onClick={() => { setSelectedAmbassadorForModal(amb); setModalMode('edit'); setShowModal(true); }} className="p-2 hover:bg-gray-800 rounded-lg text-blue-400"><Edit2 className="w-4 h-4" /></button>
-                              </div>
+                              <button onClick={() => { setSelectedAmbassadorForModal(amb); setModalMode('edit'); setShowModal(true); }} className="p-2 hover:bg-gray-800 rounded-lg text-blue-400"><Edit2 className="w-4 h-4" /></button>
                             </td>
                           </tr>
                         ))}
@@ -225,6 +240,7 @@ export const AdminDashboard = ({ currentUser, onLogout }) => {
                 </div>
               )}
 
+              {/* --- AMBASSADORS TAB --- */}
               {activeTab === 'ambassadors' && (
                 <AmbassadorsPage 
                   ambassadors={ambassadors} 
@@ -233,11 +249,17 @@ export const AdminDashboard = ({ currentUser, onLogout }) => {
                   onRefresh={loadData}
                 />
               )}
+
+              {/* --- ADMINS TAB --- */}
+              {activeTab === 'admins' && (
+                <AdminsPage />
+              )}
             </div>
           )}
         </main>
       </div>
 
+      {/* AMBASSADOR MODAL */}
       {showModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <form onSubmit={handleModalSubmit} className="w-full max-w-md bg-gray-900 border border-gray-800 rounded-3xl p-8 shadow-2xl space-y-6 animate-in zoom-in-95 duration-200">

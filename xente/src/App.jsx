@@ -1,16 +1,10 @@
 import React, { useState } from 'react';
-// import { useAuth, useStaffManagement } from './hooks/hooks';
-import { ROLES } from './constants';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from './Pages/LoginPage';
 import { AdminDashboard } from './Pages/AdminDashboard';
 import { AmbassadorDashboard } from './Pages/AmbassadorDashboard';
+import SetupPassword from './Pages/SetupPassword';
 import ApiService from './services/api';
-
-
-// ============================================
-// MAIN APP (src/App.jsx)
-// ============================================
-
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -35,16 +29,26 @@ export default function App() {
     setError('');
   };
 
-  // Show login page if no user is authenticated
-  if (!currentUser) {
-    return <LoginPage onLogin={handleLogin} loading={loading} error={error} />;
-  }
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* 1. Public Setup Route (Accessible without login) */}
+        <Route path="/setup-password" element={<SetupPassword />} />
 
-  // Show admin dashboard for admin users
-  if (currentUser.role === 'admin') {
-    return <AdminDashboard currentUser={currentUser} onLogout={handleLogout} />;
-  }
+        {/* 2. Main Auth Logic */}
+        <Route path="/" element={
+          !currentUser ? (
+            <LoginPage onLogin={handleLogin} loading={loading} error={error} />
+          ) : (currentUser.role === 'admin' || currentUser.role === 'super') ? (
+            <AdminDashboard currentUser={currentUser} onLogout={handleLogout} />
+          ) : (
+            <AmbassadorDashboard currentUser={currentUser} onLogout={handleLogout} />
+          )
+        } />
 
-  // Show ambassador dashboard for ambassador users
-  return <AmbassadorDashboard currentUser={currentUser} onLogout={handleLogout} />;
+        {/* 3. Catch-all: Redirect back to home */}
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
