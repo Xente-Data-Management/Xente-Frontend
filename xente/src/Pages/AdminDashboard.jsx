@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import ApiService from '../services/api';
 import AmbassadorsPage from '../Pages/AmbassadorsPage';
-import AdminsPage from '../Pages/AdminsPage'; // Ensure you create this file from the previous snippet
+import AdminsPage from '../Pages/AdminsPage';
 
 // --- Reusable UI Components ---
 const Button = ({ children, variant = 'primary', className = '', icon: Icon, loading, ...props }) => {
@@ -69,6 +69,11 @@ export const AdminDashboard = ({ currentUser, onLogout }) => {
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState('create');
   const [selectedAmbassadorForModal, setSelectedAmbassadorForModal] = useState(null);
+  
+  // Delete confirmation modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [ambassadorToDelete, setAmbassadorToDelete] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const [staff, setStaff] = useState([]);
   const [ambassadors, setAmbassadors] = useState([]);
@@ -127,6 +132,27 @@ export const AdminDashboard = ({ currentUser, onLogout }) => {
     } catch (err) { setError(err.message); }
   };
 
+  const handleDeleteClick = (ambassador) => {
+    setAmbassadorToDelete(ambassador);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!ambassadorToDelete) return;
+    
+    try {
+      setDeleteLoading(true);
+      await ApiService.deleteAmbassador(ambassadorToDelete.id);
+      setShowDeleteModal(false);
+      setAmbassadorToDelete(null);
+      loadData();
+    } catch (err) {
+      setError(err.message || 'Failed to delete ambassador');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   const filteredAmbassadors = selectedRegion === 'All' 
     ? ambassadors 
     : ambassadors.filter(a => a.region === selectedRegion);
@@ -147,7 +173,7 @@ export const AdminDashboard = ({ currentUser, onLogout }) => {
             {[
               { id: 'dashboard', label: 'Overview', icon: Home },
               { id: 'ambassadors', label: 'Ambassadors', icon: Users },
-              { id: 'admins', label: 'System Admins', icon: Briefcase } // Added Admin Tab
+              { id: 'admins', label: 'System Admins', icon: Briefcase }
             ].map(item => (
               <button 
                 key={item.id} 
@@ -230,7 +256,22 @@ export const AdminDashboard = ({ currentUser, onLogout }) => {
                             <td className="px-6 py-4 text-sm text-gray-400">{amb.region}</td>
                             <td className="px-6 py-4 text-center font-bold text-orange-500">{amb.totalStaff || 0}</td>
                             <td className="px-6 py-4 text-right opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button onClick={() => { setSelectedAmbassadorForModal(amb); setModalMode('edit'); setShowModal(true); }} className="p-2 hover:bg-gray-800 rounded-lg text-blue-400"><Edit2 className="w-4 h-4" /></button>
+                              <div className="flex items-center justify-end gap-2">
+                                <button 
+                                  onClick={() => { setSelectedAmbassadorForModal(amb); setModalMode('edit'); setShowModal(true); }} 
+                                  className="p-2 hover:bg-gray-800 rounded-lg text-blue-400 transition-colors"
+                                  title="Edit Ambassador"
+                                >
+                                  <Edit2 className="w-4 h-4" />
+                                </button>
+                                <button 
+                                  onClick={() => handleDeleteClick(amb)} 
+                                  className="p-2 hover:bg-red-500/10 rounded-lg text-red-400 transition-colors"
+                                  title="Delete Ambassador"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -259,7 +300,7 @@ export const AdminDashboard = ({ currentUser, onLogout }) => {
         </main>
       </div>
 
-      {/* AMBASSADOR MODAL */}
+      {/* AMBASSADOR CREATE/EDIT MODAL */}
       {showModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <form onSubmit={handleModalSubmit} className="w-full max-w-md bg-gray-900 border border-gray-800 rounded-3xl p-8 shadow-2xl space-y-6 animate-in zoom-in-95 duration-200">
@@ -277,6 +318,56 @@ export const AdminDashboard = ({ currentUser, onLogout }) => {
             </div>
             <Button type="submit" className="w-full" loading={loading}>{modalMode === 'edit' ? 'Save Changes' : 'Confirm Onboarding'}</Button>
           </form>
+        </div>
+      )}
+
+      {/* DELETE CONFIRMATION MODAL */}
+      {showDeleteModal && ambassadorToDelete && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-gray-900 border border-red-500/20 rounded-3xl p-8 shadow-2xl space-y-6 animate-in zoom-in-95 duration-200">
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-red-500/10 rounded-xl">
+                <AlertCircle className="w-6 h-6 text-red-500" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-xl font-bold text-white mb-2">Delete Ambassador</h2>
+                <p className="text-gray-400 text-sm">
+                  Are you sure you want to delete <span className="text-white font-semibold">{ambassadorToDelete.name}</span>? 
+                  This action cannot be undone and will remove all associated data.
+                </p>
+              </div>
+            </div>
+            
+            <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-4">
+              <div className="flex items-center gap-2 text-red-400 text-xs font-bold uppercase mb-2">
+                <AlertCircle className="w-3 h-3" />
+                Warning
+              </div>
+              <p className="text-gray-400 text-sm">
+                This will permanently delete {ambassadorToDelete.totalStaff || 0} staff member(s) associated with this ambassador.
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <Button 
+                variant="secondary" 
+                className="flex-1" 
+                onClick={() => { setShowDeleteModal(false); setAmbassadorToDelete(null); }}
+                disabled={deleteLoading}
+              >
+                Cancel
+              </Button>
+              <Button 
+                variant="danger" 
+                className="flex-1" 
+                onClick={handleDeleteConfirm}
+                loading={deleteLoading}
+                icon={Trash2}
+              >
+                {deleteLoading ? 'Deleting...' : 'Delete'}
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>
