@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Users, Search, Download, ChevronRight, ArrowLeft, 
-  MapPin, Mail, Calendar, Edit2, Check, X, Filter 
+  MapPin, Mail, Calendar, Edit2, Check, X, Filter, Phone 
 } from 'lucide-react';
 import ApiService from '../services/api';
 
@@ -26,7 +26,10 @@ const AmbassadorsPage = ({ ambassadors, staff, onRefresh }) => {
   const recruits = selectedAmb 
     ? staff.filter(s => {
         const matchesAmb = s.ambassador_id === selectedAmb.id;
-        const matchesSearch = s.name.toLowerCase().includes(query.toLowerCase());
+        const matchesSearch = 
+          s.name.toLowerCase().includes(query.toLowerCase()) ||
+          (s.email && s.email.toLowerCase().includes(query.toLowerCase())) ||
+          (s.phone && s.phone.toLowerCase().includes(query.toLowerCase()));
         
         // Date Logic
         if (!s.created_at) return matchesAmb && matchesSearch;
@@ -199,7 +202,7 @@ const AmbassadorsPage = ({ ambassadors, staff, onRefresh }) => {
                     <input 
                       value={query} 
                       onChange={(e) => setQuery(e.target.value)} 
-                      placeholder="Search staff by name..." 
+                      placeholder="Search by name, email, or phone..." 
                       className="w-full bg-black border border-gray-800 rounded-xl py-2 pl-10 pr-4 text-sm text-white focus:border-orange-500 outline-none" 
                     />
                   </div>
@@ -219,7 +222,8 @@ const AmbassadorsPage = ({ ambassadors, staff, onRefresh }) => {
               <table className="w-full text-left">
                   <thead>
                     <tr className="bg-black/40 text-gray-500 text-[10px] uppercase tracking-widest font-bold">
-                      <th className="px-8 py-4">Name</th>
+                      <th className="px-8 py-4">Staff Member</th>
+                      <th className="px-8 py-4">Contact</th>
                       <th className="px-8 py-4">Department</th>
                       <th className="px-8 py-4">Status</th>
                       <th className="px-8 py-4">Joined Date</th>
@@ -229,11 +233,39 @@ const AmbassadorsPage = ({ ambassadors, staff, onRefresh }) => {
                     {recruits.map(s => (
                       <tr key={s.id} className="hover:bg-white/[0.01]">
                         <td className="px-8 py-4">
-                          <p className="font-bold text-white">{s.name}</p>
-                          <p className="text-xs text-gray-500">{s.position}</p>
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-orange-500 font-bold border border-gray-700 text-sm">
+                              {s.name.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="font-bold text-white">{s.name}</p>
+                              <p className="text-xs text-gray-500">{s.position || 'N/A'}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-8 py-4">
+                          <div className="space-y-1">
+                            {s.email && (
+                              <div className="flex items-center gap-2 text-xs text-gray-400">
+                                <Mail className="w-3 h-3 text-orange-500" />
+                                <span>{s.email}</span>
+                              </div>
+                            )}
+                            {s.phone && (
+                              <div className="flex items-center gap-2 text-xs text-gray-400">
+                                <Phone className="w-3 h-3 text-orange-500" />
+                                <span>{s.phone}</span>
+                              </div>
+                            )}
+                            {!s.email && !s.phone && (
+                              <span className="text-xs text-gray-600">No contact info</span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-8 py-4 text-sm text-gray-400">
-                          <span className="bg-gray-800/50 px-2 py-1 rounded border border-gray-700">{s.department || 'N/A'}</span>
+                          <span className="bg-gray-800/50 px-2 py-1 rounded border border-gray-700">
+                            {s.department || 'N/A'}
+                          </span>
                         </td>
                         <td className="px-8 py-4">
                            <span className="flex items-center gap-1.5 text-[10px] font-bold text-green-500 uppercase">
@@ -241,13 +273,17 @@ const AmbassadorsPage = ({ ambassadors, staff, onRefresh }) => {
                            </span>
                         </td>
                         <td className="px-8 py-4 text-sm text-gray-500">
-                          {new Date(s.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                          {s.created_at ? new Date(s.created_at).toLocaleDateString(undefined, { 
+                            year: 'numeric', 
+                            month: 'short', 
+                            day: 'numeric' 
+                          }) : 'N/A'}
                         </td>
                       </tr>
                     ))}
                     {recruits.length === 0 && (
                       <tr>
-                        <td colSpan="4" className="px-8 py-16 text-center">
+                        <td colSpan="5" className="px-8 py-16 text-center">
                           <div className="flex flex-col items-center gap-2 text-gray-600">
                             <Filter className="w-8 h-8 opacity-20" />
                             <p>No staff found matching these filters.</p>

@@ -19,8 +19,8 @@ export const OnboardingForm = ({ currentUser, onSubmit, onCancel, loading }) => 
   };
 
   const handleSubmit = () => {
-    // Validate all fields are filled
-    if (formData.name && formData.email && formData.phone && formData.position && formData.department) {
+    // Only require name, phone, and department (email and position are optional)
+    if (formData.name && formData.phone && formData.department) {
       onSubmit({
         ...formData,
         ambassadorId: currentUser.id,
@@ -29,14 +29,15 @@ export const OnboardingForm = ({ currentUser, onSubmit, onCancel, loading }) => 
     }
   };
 
-  const isFormValid = formData.name && formData.email && formData.phone && formData.position && formData.department;
+  // Updated validation - only name, phone, and department are required
+  const isFormValid = formData.name && formData.phone && formData.department;
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
       <h3 className="text-xl font-bold text-gray-900 mb-6">Onboard New Staff Member</h3>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Full Name */}
+        {/* Full Name - REQUIRED */}
         <Input 
           label="Full Name" 
           value={formData.name} 
@@ -45,17 +46,21 @@ export const OnboardingForm = ({ currentUser, onSubmit, onCancel, loading }) => 
           required 
         />
 
-        {/* Email */}
-        <Input 
-          label="Email" 
-          type="email" 
-          value={formData.email} 
-          onChange={(e) => handleChange('email', e.target.value)} 
-          placeholder="john.doe@example.com"
-          required 
-        />
+        {/* Email - OPTIONAL */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Email <span className="text-gray-400 text-xs">(Optional)</span>
+          </label>
+          <input
+            type="email"
+            value={formData.email}
+            onChange={(e) => handleChange('email', e.target.value)}
+            placeholder="john.doe@example.com"
+            className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+          />
+        </div>
 
-        {/* Phone */}
+        {/* Phone - REQUIRED */}
         <Input 
           label="Phone" 
           type="tel" 
@@ -65,16 +70,21 @@ export const OnboardingForm = ({ currentUser, onSubmit, onCancel, loading }) => 
           required 
         />
 
-        {/* Position */}
-        <Input 
-          label="Position" 
-          value={formData.position} 
-          onChange={(e) => handleChange('position', e.target.value)} 
-          placeholder="Software Engineer"
-          required 
-        />
+        {/* Position - OPTIONAL */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Position <span className="text-gray-400 text-xs">(Optional)</span>
+          </label>
+          <input
+            type="text"
+            value={formData.position}
+            onChange={(e) => handleChange('position', e.target.value)}
+            placeholder="Software Engineer"
+            className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+          />
+        </div>
 
-        {/* Department */}
+        {/* Department - REQUIRED */}
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Department <span className="text-red-500">*</span>
