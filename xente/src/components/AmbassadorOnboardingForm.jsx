@@ -1,36 +1,34 @@
 import React, { useState } from 'react';
 import { Button, Input, Select } from './components';
 
-const DEPARTMENTS = ['Sales', 'Marketing', 'Operations', 'Customer Service', 'IT', 'Finance', 'HR'];
+const REGIONS = ['Northern', 'Central', 'Western', 'Eastern'];
 
 // ============================================
-// ONBOARDING FORM COMPONENT
+// AMBASSADOR ONBOARDING FORM COMPONENT
 // ============================================
-export const OnboardingForm = ({ currentUser, onSubmit, onCancel }) => {
+export const AmbassadorOnboardingForm = ({ onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    phone: '',
-    position: '',
-    department: ''
+    region: ''
   });
 
   const handleSubmit = () => {
-    if (!formData.name || !formData.email || !formData.phone || !formData.position || !formData.department) {
+    if (!formData.name || !formData.email || !formData.region) {
       alert('Please fill all required fields');
       return;
     }
-    
+
     onSubmit({
       ...formData,
-      ambassadorId: currentUser.id,
-      ambassadorName: currentUser.name
+      id: `amb-${Date.now()}`, // Generate unique ID
+      role: 'ambassador'
     });
   };
 
   return (
     <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
-      <h2 className="text-2xl font-bold mb-6 text-gray-900">Onboard New Staff Member</h2>
+      <h2 className="text-2xl font-bold mb-6 text-gray-900">Onboard New Ambassador</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Input
           label="Full Name"
@@ -47,28 +45,13 @@ export const OnboardingForm = ({ currentUser, onSubmit, onCancel }) => {
           placeholder="john@example.com"
           required
         />
-        <Input
-          label="Phone Number"
-          type="tel"
-          value={formData.phone}
-          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-          placeholder="+256 700 000000"
-          required
-        />
-        <Input
-          label="Position"
-          value={formData.position}
-          onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-          placeholder="Sales Associate"
-          required
-        />
         <div className="md:col-span-2">
           <Select
-            label="Department"
-            value={formData.department}
-            onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-            placeholder="Select Department"
-            options={DEPARTMENTS.map(d => ({ value: d, label: d }))}
+            label="Region"
+            value={formData.region}
+            onChange={(e) => setFormData({ ...formData, region: e.target.value })}
+            placeholder="Select Region"
+            options={REGIONS.map(r => ({ value: r, label: r }))}
           />
         </div>
         <div className="md:col-span-2 flex space-x-4 pt-4">

@@ -1,40 +1,40 @@
 import { useState, useMemo, useCallback } from 'react';
 import {  mockData, ROLES } from '../constants';
 import { exportToCSV, filterStaff } from '../utils';
-// import { mockData, ROLES, filterStaff, exportToCSV } from './utils';
 
-// ============================================
-// CUSTOM HOOKS
-// ============================================
-
-// Authentication Hook
 export const useAuth = () => {
   const [currentUser, setCurrentUser] = useState(null);
+  const [ambassadors, setAmbassadors] = useState(mockData.users.ambassadors);
 
   const login = useCallback((email) => {
     if (email === 'admin@example.com') {
       setCurrentUser(mockData.users.admin);
     } else {
-      const ambassador = mockData.users.ambassadors.find(a => a.email === email);
+      const ambassador = ambassadors.find(a => a.email === email);
       if (ambassador) {
         setCurrentUser({ ...ambassador, role: ROLES.AMBASSADOR });
       }
     }
-  }, []);
+  }, [ambassadors]);
 
   const logout = useCallback(() => {
     setCurrentUser(null);
   }, []);
 
-  return { currentUser, login, logout };
+  const addAmbassador = useCallback((ambassadorData) => {
+    setAmbassadors(prev => [...prev, ambassadorData]);
+  }, []);
+
+  return { currentUser, login, logout, ambassadors, addAmbassador };
 };
 
 // Staff Management Hook
-export const useStaffManagement = (currentUser) => {
+export const useStaffManagement = (currentUser, ambassadors) => {
   const [staff, setStaff] = useState(mockData.staff);
   const [filters, setFilters] = useState({
     search: '',
-    ambassadorId: 'all'
+    ambassadorId: 'all',
+    date: ''
   });
 
   const filteredStaff = useMemo(() => {
@@ -68,12 +68,13 @@ export const useStaffManagement = (currentUser) => {
     exportToCSV(filteredStaff, `staff_onboarding_${new Date().toISOString().split('T')[0]}.csv`);
   }, [filteredStaff]);
 
-  return { 
-    staff, 
-    filteredStaff, 
-    filters, 
-    setFilters, 
-    addStaff, 
-    exportStaff: exportStaffData 
+  return {
+    staff,
+    ambassadors,
+    filteredStaff,
+    filters,
+    setFilters,
+    addStaff,
+    exportStaff: exportStaffData
   };
 };

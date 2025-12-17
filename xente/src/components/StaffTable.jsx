@@ -1,60 +1,91 @@
-import React from 'react';
-import { Users, Calendar } from 'lucide-react';
+// ============================================
+// STAFF TABLE (src/components/StaffTable.jsx)
+// ============================================
 
-// ============================================
-// STAFF TABLE COMPONENT
-// ============================================
-export const StaffTable = ({ staff, showAmbassador = false }) => (
-  <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
-    <div className="overflow-x-auto">
-      <table className="w-full">
-        <thead className="bg-gradient-to-r from-gray-900 to-black">
-          <tr>
-            <th className="px-6 py-4 text-left text-xs font-bold text-orange-400 uppercase tracking-wider">Name</th>
-            <th className="px-6 py-4 text-left text-xs font-bold text-orange-400 uppercase tracking-wider">Email</th>
-            <th className="px-6 py-4 text-left text-xs font-bold text-orange-400 uppercase tracking-wider">Phone</th>
-            <th className="px-6 py-4 text-left text-xs font-bold text-orange-400 uppercase tracking-wider">Position</th>
-            <th className="px-6 py-4 text-left text-xs font-bold text-orange-400 uppercase tracking-wider">Department</th>
-            {showAmbassador && (
-              <th className="px-6 py-4 text-left text-xs font-bold text-orange-400 uppercase tracking-wider">Ambassador</th>
-            )}
-            <th className="px-6 py-4 text-left text-xs font-bold text-orange-400 uppercase tracking-wider">Date</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-200">
-          {staff.length === 0 ? (
+import React from 'react';
+import { Trash2, Edit, Users } from 'lucide-react';
+
+export const StaffTable = ({ staff, onDelete, onEdit, loading }) => {
+  if (staff.length === 0) {
+    return (
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-12">
+        <div className="text-center text-gray-500">
+          <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+          <h3 className="text-lg font-semibold text-gray-700 mb-2">No Staff Members</h3>
+          <p className="text-sm">Start onboarding staff members to see them here.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              <td colSpan={showAmbassador ? 7 : 6} className="px-6 py-12 text-center">
-                <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500 font-medium">No staff members found</p>
-              </td>
+              {['Name', 'Email', 'Phone', 'Position', 'Department', 'Date', 'Actions'].map(header => (
+                <th 
+                  key={header} 
+                  className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"
+                >
+                  {header}
+                </th>
+              ))}
             </tr>
-          ) : (
-            staff.map(person => (
-              <tr key={person.id} className="hover:bg-orange-50 transition">
-                <td className="px-6 py-4 text-sm font-semibold text-gray-900">{person.name}</td>
-                <td className="px-6 py-4 text-sm text-gray-600">{person.email}</td>
-                <td className="px-6 py-4 text-sm text-gray-600">{person.phone}</td>
-                <td className="px-6 py-4 text-sm text-gray-600">{person.position}</td>
+          </thead>
+          <tbody className="divide-y divide-gray-200">
+            {staff.map(member => (
+              <tr key={member.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4">
-                  <span className="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">
-                    {person.department}
+                  <div className="font-medium text-gray-900">{member.name}</div>
+                </td>
+                <td className="px-6 py-4">
+                  <div className="text-gray-600">{member.email}</div>
+                </td>
+                <td className="px-6 py-4">
+                  <div className="text-gray-600">{member.phone}</div>
+                </td>
+                <td className="px-6 py-4">
+                  <div className="text-gray-600">{member.position}</div>
+                </td>
+                <td className="px-6 py-4">
+                  <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium">
+                    {member.department}
                   </span>
                 </td>
-                {showAmbassador && (
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{person.ambassadorName}</td>
-                )}
-                <td className="px-6 py-4 text-sm text-gray-600">
-                  <div className="flex items-center space-x-2">
-                    <Calendar className="w-4 h-4 text-orange-500" />
-                    <span>{person.onboardedDate}</span>
+                <td className="px-6 py-4">
+                  <div className="text-gray-600 text-sm">
+                    {new Date(member.onboarded_date).toLocaleDateString()}
+                  </div>
+                </td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center space-x-3">
+                    {onEdit && (
+                      <button
+                        onClick={() => onEdit(member)}
+                        disabled={loading}
+                        className="text-blue-600 hover:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Edit"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => onDelete(member.id)}
+                      disabled={loading}
+                      className="text-red-600 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
-  </div>
-);
+  );
+};

@@ -1,26 +1,50 @@
-import React from 'react';
-import { useAuth, useStaffManagement } from './hooks/hooks';
+import React, { useState } from 'react';
+// import { useAuth, useStaffManagement } from './hooks/hooks';
 import { ROLES } from './constants';
 import { LoginPage } from './Pages/LoginPage';
 import { AdminDashboard } from './Pages/AdminDashboard';
 import { AmbassadorDashboard } from './Pages/AmbassadorDashboard';
+import ApiService from './services/api';
+
 
 // ============================================
-// MAIN APP COMPONENT
+// MAIN APP (src/App.jsx)
 // ============================================
-function App() {
-  const { currentUser, login, logout } = useAuth();
-  const staffManagement = useStaffManagement(currentUser);
 
+
+export default function App() {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleLogin = async (email) => {
+    try {
+      setLoading(true);
+      setError('');
+      const data = await ApiService.login(email);
+      setCurrentUser(data.user);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setError('');
+  };
+
+  // Show login page if no user is authenticated
   if (!currentUser) {
-    return <LoginPage onLogin={login} />;
+    return <LoginPage onLogin={handleLogin} loading={loading} error={error} />;
   }
 
-  if (currentUser.role === ROLES.ADMIN) {
-    return <AdminDashboard currentUser={currentUser} staffManagement={staffManagement} onLogout={logout} />;
+  // Show admin dashboard for admin users
+  if (currentUser.role === 'admin') {
+    return <AdminDashboard currentUser={currentUser} onLogout={handleLogout} />;
   }
 
-  return <AmbassadorDashboard currentUser={currentUser} staffManagement={staffManagement} onLogout={logout} />;
+  // Show ambassador dashboard for ambassador users
+  return <AmbassadorDashboard currentUser={currentUser} onLogout={handleLogout} />;
 }
-
-export default App;
