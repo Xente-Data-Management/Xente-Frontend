@@ -1,14 +1,10 @@
-// ============================================
-// API SERVICE (services/api.js)
-// ============================================
-
+// src/services/api.js
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 class ApiService {
   // ============================================
   // USER/AUTH ENDPOINTS
   // ============================================
-  
   static async login(email) {
     const response = await fetch(`${API_BASE_URL}/users/login`, {
       method: 'POST',
@@ -25,28 +21,74 @@ class ApiService {
   }
 
   // ============================================
-  // AMBASSADOR ENDPOINTS
+  // ADMIN MANAGEMENT
   // ============================================
-  
-  static async getAllAmbassadors() {
-    const response = await fetch(`${API_BASE_URL}/users/ambassadors`);
+  static async getAllAdmins() {
+    const response = await fetch(`${API_BASE_URL}/admins/all`);
     
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error || 'Failed to fetch ambassadors');
+      throw new Error(error.error || 'Failed to fetch admins');
     }
     
     return response.json();
   }
 
-  static async getAmbassador(id) {
-    const response = await fetch(`${API_BASE_URL}/users/ambassadors/${id}`);
+  static async createAdmin(data) {
+    const response = await fetch(`${API_BASE_URL}/admins/invite`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
     
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error || 'Failed to fetch ambassador');
+      throw new Error(error.error || 'Failed to send invitation');
     }
     
+    return response.json();
+  }
+
+  static async completeAdminSetup(data) {
+    const response = await fetch(`${API_BASE_URL}/admins/setup-complete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Setup link invalid or expired');
+    }
+    
+    return response.json();
+  }
+
+  static async deleteAdmin(id) {
+    const response = await fetch(`${API_BASE_URL}/admins/${id}`, {
+      method: 'DELETE'
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to revoke admin access');
+    }
+    
+    return response.json();
+  }
+
+  // ============================================
+  // AMBASSADOR ENDPOINTS
+  // ============================================
+  static async getAllAmbassadors() {
+    const response = await fetch(`${API_BASE_URL}/users/ambassadors`);
+    if (!response.ok) throw new Error('Failed to fetch ambassadors');
+    return response.json();
+  }
+
+  static async getAmbassador(id) {
+    const response = await fetch(`${API_BASE_URL}/users/ambassadors/${id}`);
+    if (!response.ok) throw new Error('Failed to fetch ambassador');
     return response.json();
   }
 
@@ -56,12 +98,7 @@ class ApiService {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to create ambassador');
-    }
-    
+    if (!response.ok) throw new Error('Failed to create ambassador');
     return response.json();
   }
 
@@ -71,12 +108,7 @@ class ApiService {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to update ambassador');
-    }
-    
+    if (!response.ok) throw new Error('Failed to update ambassador');
     return response.json();
   }
 
@@ -84,39 +116,23 @@ class ApiService {
     const response = await fetch(`${API_BASE_URL}/users/ambassadors/${id}`, {
       method: 'DELETE'
     });
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to delete ambassador');
-    }
-    
+    if (!response.ok) throw new Error('Failed to delete ambassador');
     return response.json();
   }
 
   // ============================================
   // STAFF ENDPOINTS
   // ============================================
-  
   static async getAllStaff(ambassadorId = null) {
     const params = ambassadorId ? `?ambassadorId=${ambassadorId}` : '';
     const response = await fetch(`${API_BASE_URL}/staff${params}`);
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to fetch staff');
-    }
-    
+    if (!response.ok) throw new Error('Failed to fetch staff');
     return response.json();
   }
 
   static async getStaff(id) {
     const response = await fetch(`${API_BASE_URL}/staff/${id}`);
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to fetch staff member');
-    }
-    
+    if (!response.ok) throw new Error('Failed to fetch staff member');
     return response.json();
   }
 
@@ -126,12 +142,7 @@ class ApiService {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to create staff member');
-    }
-    
+    if (!response.ok) throw new Error('Failed to create staff member');
     return response.json();
   }
 
@@ -141,12 +152,7 @@ class ApiService {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to update staff member');
-    }
-    
+    if (!response.ok) throw new Error('Failed to update staff member');
     return response.json();
   }
 
@@ -154,12 +160,7 @@ class ApiService {
     const response = await fetch(`${API_BASE_URL}/staff/${id}`, {
       method: 'DELETE'
     });
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to delete staff member');
-    }
-    
+    if (!response.ok) throw new Error('Failed to delete staff member');
     return response.json();
   }
 
@@ -168,12 +169,7 @@ class ApiService {
     if (ambassadorId) params.append('ambassadorId', ambassadorId);
     
     const response = await fetch(`${API_BASE_URL}/staff/search?${params}`);
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to search staff');
-    }
-    
+    if (!response.ok) throw new Error('Failed to search staff');
     return response.json();
   }
 
@@ -182,24 +178,14 @@ class ApiService {
     if (ambassadorId) params.append('ambassadorId', ambassadorId);
     
     const response = await fetch(`${API_BASE_URL}/staff/filter?${params}`);
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to filter staff');
-    }
-    
+    if (!response.ok) throw new Error('Failed to filter staff');
     return response.json();
   }
 
   static async getStatistics(ambassadorId = null) {
     const params = ambassadorId ? `?ambassadorId=${ambassadorId}` : '';
     const response = await fetch(`${API_BASE_URL}/staff/statistics${params}`);
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to fetch statistics');
-    }
-    
+    if (!response.ok) throw new Error('Failed to fetch statistics');
     return response.json();
   }
 
