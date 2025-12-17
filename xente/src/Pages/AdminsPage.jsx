@@ -4,19 +4,15 @@ import ApiService from '../services/api';
 
 const AdminsPage = () => {
   const [admins, setAdmins] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [msg, setMsg] = useState(null);
 
   const fetchAdmins = async () => {
     try {
-      setLoading(true);
       const data = await ApiService.getAllAdmins();
       setAdmins(data.admins || []);
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -44,7 +40,7 @@ const AdminsPage = () => {
       await ApiService.deleteAdmin(id);
       fetchAdmins();
       setMsg({ type: 'success', text: 'Admin access revoked.' });
-    } catch (err) {
+    } catch {
       setMsg({ type: 'error', text: 'Failed to delete admin.' });
     }
   };
