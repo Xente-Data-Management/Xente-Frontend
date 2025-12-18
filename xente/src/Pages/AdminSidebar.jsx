@@ -30,9 +30,11 @@ export const AdminSidebar = ({ activeTab, setActiveTab, isMobileOpen, setIsMobil
         <div className="p-6">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-2 rounded-xl">
-                <Users className="w-6 h-6 text-white" />
-              </div>
+              <img 
+                src="/xenteLogo1.png" 
+                alt="Xente Logo" 
+                className="h-10 w-auto object-contain"
+              />
               <span className="text-white font-bold text-lg">Admin Portal</span>
             </div>
             <button 
