@@ -22,14 +22,16 @@ export const LoginPage = ({ onLogin, loading, error }) => {
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
         {/* Logo */}
         <div className="flex items-center justify-center mb-8">
-          <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-4 rounded-2xl shadow-lg">
-            <Users className="w-10 h-10 text-white" />
-          </div>
+          <img 
+            src="/xenteLogo1.png" 
+            alt="Xente Logo" 
+            className="h-24 w-auto object-contain"
+          />
         </div>
 
         {/* Header */}
         <h1 className="text-3xl font-bold text-center text-gray-900 mb-2">Welcome Back</h1>
-        <p className="text-center text-gray-600 mb-8">Ambassador Onboarding System</p>
+        <p className="text-center text-gray-600 mb-8">Xente Onboarding System</p>
         
         {/* Error Message */}
         {error && (
