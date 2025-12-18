@@ -62,7 +62,6 @@ export const LoginPage = ({ onLogin, loading, error }) => {
           <p className="font-semibold mb-2 text-gray-900">Demo Credentials:</p>
           <div className="space-y-1">
             <p><span className="font-medium">Admin:</span> admin@example.com</p>
-            <p><span className="font-medium">Ambassador:</span> john@example.com</p>
           </div>
         </div>
       </div>
