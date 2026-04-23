@@ -25,8 +25,12 @@ const AdminsPage = () => {
     
     try {
       // This will now send just Name, Email, and Role to your backend
-      await ApiService.createAdmin(data); 
-      setMsg({ type: 'success', text: `Invitation sent to ${data.email} successfully!` });
+      const response = await ApiService.createAdmin(data); 
+      setMsg({ 
+        type: 'success', 
+        text: `Invitation sent to ${data.email}.`,
+        link: response.previewUrl
+      });
       setShowCreate(false);
       fetchAdmins();
     } catch (err) {
@@ -64,7 +68,14 @@ const AdminsPage = () => {
         <div className={`p-4 rounded-xl flex items-center justify-between ${msg.type === 'success' ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
           <div className="flex items-center gap-3">
             {msg.type === 'success' ? <CheckCircle className="w-5 h-5"/> : <AlertCircle className="w-5 h-5"/>}
-            <span className="text-sm font-medium">{msg.text}</span>
+            <div className="flex flex-col">
+              <span className="text-sm font-medium">{msg.text}</span>
+              {msg.link && (
+                <a href={msg.link} target="_blank" rel="noreferrer" className="text-xs text-orange-500 hover:text-orange-400 font-bold underline mt-1">
+                  View Development Email Preview
+                </a>
+              )}
+            </div>
           </div>
           <button onClick={() => setMsg(null)} className="text-xs uppercase font-bold opacity-50 hover:opacity-100">Dismiss</button>
         </div>

@@ -6,10 +6,16 @@ import { BarChart3 } from 'lucide-react';
 // ============================================
 export const MonthlyTrendChart = ({ staff }) => {
   const monthlyData = useMemo(() => {
-    const months = ['Nov', 'Dec'];
-    const counts = months.map(month => {
-      const monthNum = month === 'Nov' ? 10 : 11;
-      return staff.filter(s => new Date(s.onboardedDate).getMonth() === monthNum).length;
+    const today = new Date();
+    const thisMonth = today.getMonth();
+    const lastMonth = thisMonth === 0 ? 11 : thisMonth - 1;
+    
+    // Get month names (e.g., 'Jan', 'Feb')
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [monthNames[lastMonth], monthNames[thisMonth]];
+    
+    const counts = [lastMonth, thisMonth].map(monthNum => {
+      return staff.filter(s => new Date(s.onboarded_date).getMonth() === monthNum).length;
     });
     return { months, counts };
   }, [staff]);

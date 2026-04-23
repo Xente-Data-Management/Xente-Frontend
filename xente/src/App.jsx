@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { LoginPage } from './Pages/LoginPage';
 import { AdminDashboard } from './Pages/AdminDashboard';
 import { AmbassadorDashboard } from './Pages/AmbassadorDashboard';
@@ -30,7 +31,9 @@ export default function App() {
   };
 
   return (
-    <BrowserRouter>
+    <>
+      <Toaster position="top-right" />
+      <BrowserRouter>
       <Routes>
         {/* 1. Public Setup Route (Accessible without login) */}
         <Route path="/setup-password" element={<SetupPassword />} />
@@ -50,5 +53,6 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
+  </>
   );
 }

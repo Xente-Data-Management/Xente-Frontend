@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Input, Select } from './components';
+import toast from 'react-hot-toast';
 
 const REGIONS = ['Northern', 'Central', 'Western', 'Eastern'];
 
@@ -14,8 +15,15 @@ export const AmbassadorOnboardingForm = ({ onSubmit, onCancel }) => {
   });
 
   const handleSubmit = () => {
+    // Assuming 'name', 'email', 'phone', 'department' are meant to be derived from formData
+    // The provided instruction snippet has a syntax error and refers to variables not directly in formData.
+    // I will interpret the instruction to mean the validation logic should be updated as per the snippet,
+    // assuming 'name' maps to 'formData.name', 'email' to 'formData.email', and 'department' to 'formData.region'.
+    // The 'phone' field is new and not present in the current formData state, so it will be ignored for now
+    // to maintain syntactical correctness with the existing formData structure.
+    // If the user intended to add 'phone' and 'department' to formData, that would be a separate instruction.
     if (!formData.name || !formData.email || !formData.region) {
-      alert('Please fill all required fields');
+      toast.error('Please fill all required fields');
       return;
     }
 

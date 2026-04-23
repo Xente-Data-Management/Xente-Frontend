@@ -3,64 +3,25 @@ import {
   Users, LogOut, BarChart3, TrendingUp, Mail, MapPin, 
   Menu, X, Home, Search, Calendar, Download, 
   RefreshCw, UserPlus, Trophy, AlertCircle, 
-  Edit2, Trash2, ChevronRight, Shield, Briefcase
+  Edit2, Trash2, ChevronRight, Shield, Briefcase, FileText
 } from 'lucide-react';
 import ApiService from '../services/api';
 import AmbassadorsPage from '../Pages/AmbassadorsPage';
 import AdminsPage from '../Pages/AdminsPage';
+import RequisitionsPage from '../Pages/RequisitionsPage';
 
-// --- Reusable UI Components ---
-const Button = ({ children, variant = 'primary', className = '', icon: Icon, loading, ...props }) => {
-  const variants = {
-    primary: 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg shadow-orange-500/20',
-    secondary: 'bg-gray-800 hover:bg-gray-700 text-white border border-gray-700',
-    outline: 'border border-gray-700 hover:bg-gray-800 text-gray-300 hover:text-white',
-    danger: 'bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/20'
-  };
-  return (
-    <button disabled={loading} className={`flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-medium transition-all active:scale-95 disabled:opacity-50 ${variants[variant]} ${className}`} {...props}>
-      {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : Icon && <Icon className="w-4 h-4" />}
-      {children}
-    </button>
-  );
-};
+import { Button, StatCard, LoadingSpinner, ErrorAlert } from '../components/components';
+import { TopPerformerCard } from '../components/TopPerformerCard';
 
-const StatCard = ({ icon: Icon, label, value, colorClass = "text-orange-500" }) => (
-  <div className="bg-gray-900 border border-gray-800 p-6 rounded-2xl hover:border-orange-500/30 transition-all group">
-    <div className="flex justify-between items-start mb-4">
-      <div className="p-3 bg-gray-800 rounded-xl group-hover:bg-orange-500/10 transition-colors">
-        <Icon className={`w-6 h-6 ${colorClass}`} />
-      </div>
-    </div>
-    <div className="text-2xl font-bold text-white">{value}</div>
-    <div className="text-sm text-gray-500 mt-1">{label}</div>
-  </div>
-);
-
-const TopPerformerCard = ({ ambassador }) => {
-  if (!ambassador) return null;
-  return (
-    <div className="bg-gradient-to-br from-orange-500 to-orange-700 rounded-2xl p-6 shadow-xl shadow-orange-500/20 relative overflow-hidden group h-full">
-      <Trophy className="absolute right-[-10px] bottom-[-10px] w-32 h-32 text-white/10 rotate-12 group-hover:rotate-0 transition-transform duration-500" />
-      <div className="relative z-10">
-        <div className="flex items-center gap-2 text-orange-100 text-xs font-bold uppercase tracking-wider mb-2">
-          <Trophy className="w-4 h-4" /> Top Performer
-        </div>
-        <h3 className="text-2xl font-bold text-white mb-1">{ambassador.name}</h3>
-        <p className="text-orange-100 text-sm mb-4">{ambassador.region} Region</p>
-        <div className="flex gap-4">
-          <div className="bg-white/20 backdrop-blur-md rounded-lg px-3 py-2 text-center flex-1">
-            <div className="text-white font-bold text-lg">{ambassador.totalStaff || 0}</div>
-            <div className="text-orange-100 text-[10px] uppercase">Recruits</div>
-          </div>
-          <div className="bg-white/20 backdrop-blur-md rounded-lg px-3 py-2 text-center flex-1">
-            <div className="text-white font-bold text-lg">Active</div>
-            <div className="text-orange-100 text-[10px] uppercase">Status</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+const getNavItems = (role) => {
+  const items = [
+    { id: 'dashboard', label: 'Overview', icon: Home, roles: ['admin', 'super', 'director', 'hr', 'finance'] },
+    { id: 'ambassadors', label: 'HR / Ambassadors', icon: Users, roles: ['admin', 'super', 'director', 'hr'] },
+    { id: 'admins', label: 'System Admins', icon: Briefcase, roles: ['admin', 'super', 'director', 'hr', 'finance'] },
+    { id: 'requisitions', label: 'Requisitions', icon: FileText, roles: ['admin', 'super', 'director', 'hr', 'finance'] },
+    { id: 'finance', label: 'Finance Hub', icon: BarChart3, roles: ['super', 'director', 'finance'] }
+  ];
+  return items.filter(item => item.roles.includes(role || 'admin'));
 };
 
 export const AdminDashboard = ({ currentUser, onLogout }) => {
@@ -94,7 +55,7 @@ export const AdminDashboard = ({ currentUser, onLogout }) => {
         ApiService.getAllAmbassadors(),
         ApiService.getStatistics()
       ]);
-      setStaff(staffData.staff || []);
+      setStaff(staffData.data || []);
       setAmbassadors(ambData.ambassadors || []);
       setStats(statData);
     } catch (err) {
@@ -170,11 +131,7 @@ export const AdminDashboard = ({ currentUser, onLogout }) => {
           </div>
           
           <nav className="flex-1 space-y-2">
-            {[
-              { id: 'dashboard', label: 'Overview', icon: Home },
-              { id: 'ambassadors', label: 'Ambassadors', icon: Users },
-              { id: 'admins', label: 'System Admins', icon: Briefcase }
-            ].map(item => (
+            {getNavItems(currentUser?.role).map(item => (
               <button 
                 key={item.id} 
                 onClick={() => { setActiveTab(item.id); setIsSidebarOpen(false); }} 
@@ -197,7 +154,7 @@ export const AdminDashboard = ({ currentUser, onLogout }) => {
             <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden text-gray-400"><Menu /></button>
             <h2 className="text-lg font-semibold text-white uppercase tracking-wider">{activeTab}</h2>
           </div>
-          {activeTab !== 'admins' && (
+          {activeTab === 'ambassadors' && ['hr', 'director', 'super'].includes(currentUser?.role) && (
             <Button onClick={() => { setSelectedAmbassadorForModal(null); setModalMode('create'); setShowModal(true); }} icon={UserPlus}>Add Ambassador</Button>
           )}
         </header>
@@ -256,22 +213,24 @@ export const AdminDashboard = ({ currentUser, onLogout }) => {
                             <td className="px-6 py-4 text-sm text-gray-400">{amb.region}</td>
                             <td className="px-6 py-4 text-center font-bold text-orange-500">{amb.totalStaff || 0}</td>
                             <td className="px-6 py-4 text-right opacity-0 group-hover:opacity-100 transition-opacity">
-                              <div className="flex items-center justify-end gap-2">
-                                <button 
-                                  onClick={() => { setSelectedAmbassadorForModal(amb); setModalMode('edit'); setShowModal(true); }} 
-                                  className="p-2 hover:bg-gray-800 rounded-lg text-blue-400 transition-colors"
-                                  title="Edit Ambassador"
-                                >
-                                  <Edit2 className="w-4 h-4" />
-                                </button>
-                                <button 
-                                  onClick={() => handleDeleteClick(amb)} 
-                                  className="p-2 hover:bg-red-500/10 rounded-lg text-red-400 transition-colors"
-                                  title="Delete Ambassador"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </div>
+                              {['hr', 'director', 'super'].includes(currentUser?.role) && (
+                                <div className="flex items-center justify-end gap-2">
+                                  <button 
+                                    onClick={() => { setSelectedAmbassadorForModal(amb); setModalMode('edit'); setShowModal(true); }} 
+                                    className="p-2 hover:bg-gray-800 rounded-lg text-blue-400 transition-colors"
+                                    title="Edit Ambassador"
+                                  >
+                                    <Edit2 className="w-4 h-4" />
+                                  </button>
+                                  <button 
+                                    onClick={() => handleDeleteClick(amb)} 
+                                    className="p-2 hover:bg-red-500/10 rounded-lg text-red-400 transition-colors"
+                                    title="Delete Ambassador"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              )}
                             </td>
                           </tr>
                         ))}
@@ -288,12 +247,29 @@ export const AdminDashboard = ({ currentUser, onLogout }) => {
                   staff={staff} 
                   loading={loading}
                   onRefresh={loadData}
+                  currentUser={currentUser}
                 />
               )}
 
               {/* --- ADMINS TAB --- */}
               {activeTab === 'admins' && (
-                <AdminsPage />
+                <AdminsPage currentUser={currentUser} />
+              )}
+
+              {/* --- REQUISITIONS TAB --- */}
+              {activeTab === 'requisitions' && (
+                <RequisitionsPage currentUser={currentUser} />
+              )}
+              
+              {/* --- FINANCE TAB --- */}
+              {activeTab === 'finance' && (
+                <div className="flex flex-col items-center justify-center p-12 text-center h-96 border border-gray-800 rounded-3xl bg-gray-900/50">
+                  <BarChart3 className="w-16 h-16 text-orange-500 mb-4 opacity-50" />
+                  <h3 className="text-2xl font-bold text-white mb-2">Finance Hub</h3>
+                  <p className="text-gray-500 max-w-sm">
+                    Requisitions, payouts, and financial logic will live here in Phase 5.
+                  </p>
+                </div>
               )}
             </div>
           )}

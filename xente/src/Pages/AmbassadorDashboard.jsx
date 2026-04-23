@@ -8,6 +8,7 @@ import { Button, StatCard, ErrorAlert } from '../components/components';
 import { OnboardingForm } from '../components/OnboardingForm';
 import { StaffTable } from '../components/StaffTable';
 import ApiService from '../services/api';
+import toast from 'react-hot-toast';
 
 export const AmbassadorDashboard = ({ currentUser, onLogout }) => {
   const [staff, setStaff] = useState([]);
@@ -33,9 +34,9 @@ export const AmbassadorDashboard = ({ currentUser, onLogout }) => {
   const loadStaff = async () => {
     try {
       setLoading(true);
-      const data = await ApiService.getAllStaff(currentUser.id);
-      setStaff(data.staff);
-      setFilteredStaff(data.staff);
+      const response = await ApiService.getAllStaff(currentUser.id);
+      setStaff(response.data);
+      setFilteredStaff(response.data);
       setError('');
     } catch (err) {
       setError(err.message);
@@ -73,8 +74,20 @@ export const AmbassadorDashboard = ({ currentUser, onLogout }) => {
     }
   };
 
-  const handleExport = () => {
-    window.open(ApiService.getExportUrl(currentUser.id), '_blank');
+  const handleExport = async () => {
+    try {
+      const blob = await ApiService.downloadExport(currentUser.id);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `staff-export-${currentUser.id}-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      toast.error('Failed to export staff statistics');
+    }
   };
 
   const thisMonthCount = filteredStaff.filter(s => 

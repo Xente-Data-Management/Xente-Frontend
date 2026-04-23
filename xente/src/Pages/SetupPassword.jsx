@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Lock, CheckCircle, Shield, AlertCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
 import ApiService from '../services/api';
 
 const SetupPassword = () => {
@@ -14,13 +15,13 @@ const SetupPassword = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (password !== confirmPassword) return alert("Passwords do not match");
+    if (password !== confirmPassword) return toast.error("Passwords do not match");
 
     try {
       setStatus('loading');
       await ApiService.completeAdminSetup({ token, password });
       setStatus('success');
-      setTimeout(() => navigate('/login'), 3000);
+      setTimeout(() => navigate('/'), 3000);
     } catch (err) {
       setStatus('error');
     }

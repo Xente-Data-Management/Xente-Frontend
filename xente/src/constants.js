@@ -47,38 +47,7 @@ export const mockData = {
 // UTILITY FUNCTIONS
 // ============================================
 
-// Filter staff based on search query
-export const filterStaff = (staff, filters) => {
-  const searchLower = filters.search.toLowerCase();
-  return staff.filter(s => 
-    s.name.toLowerCase().includes(searchLower) ||
-    s.email.toLowerCase().includes(searchLower) ||
-    s.position.toLowerCase().includes(searchLower) ||
-    s.department.toLowerCase().includes(searchLower)
-  );
-};
 
-// Export data to CSV
-export const exportToCSV = (data, filename) => {
-  if (data.length === 0) {
-    alert('No data to export');
-    return;
-  }
-
-  const headers = Object.keys(data[0]);
-  const csvContent = [
-    headers.join(','),
-    ...data.map(row => headers.map(header => `"${row[header] || ''}"`).join(','))
-  ].join('\n');
-
-  const blob = new Blob([csvContent], { type: 'text/csv' });
-  const url = window.URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  link.click();
-  window.URL.revokeObjectURL(url);
-};
 
 // Calculate growth rate
 export const calculateGrowthRate = (currentCount, previousCount) => {

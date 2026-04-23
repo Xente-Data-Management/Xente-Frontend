@@ -4,14 +4,20 @@ import {
   MapPin, Mail, Calendar, Edit2, Check, X, Filter, Phone 
 } from 'lucide-react';
 import ApiService from '../services/api';
+import toast from 'react-hot-toast';
+import { OnboardingForm } from '../components/OnboardingForm';
 
-const AmbassadorsPage = ({ ambassadors, staff, onRefresh }) => {
+const AmbassadorsPage = ({ ambassadors, staff, onRefresh, currentUser }) => {
   const [selectedAmb, setSelectedAmb] = useState(null);
   const [query, setQuery] = useState('');
   
   // Edit State
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ name: '', region: '' });
+  const [editForm, setEditForm] = useState({ name: '', email: '', region: '' });
+  
+  // Onboarding State
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingLoading, setOnboardingLoading] = useState(false);
 
   // Date Filter State
   const [dateFilter, setDateFilter] = useState({ start: '', end: '' });
@@ -41,8 +47,24 @@ const AmbassadorsPage = ({ ambassadors, staff, onRefresh }) => {
       })
     : [];
 
+  const handleExportStaff = async (ambId = null) => {
+    try {
+      const blob = await ApiService.downloadExport(ambId);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `staff-export-${ambId || 'master'}-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      toast.error('Failed to export staff statistics');
+    }
+  };
+
   const handleStartEdit = () => {
-    setEditForm({ name: selectedAmb.name, region: selectedAmb.region });
+    setEditForm({ name: selectedAmb.name, email: selectedAmb.email, region: selectedAmb.region });
     setIsEditing(true);
   };
 
@@ -53,7 +75,21 @@ const AmbassadorsPage = ({ ambassadors, staff, onRefresh }) => {
       setIsEditing(false);
       onRefresh(); // Sync main dashboard data
     } catch (err) {
-      alert("Failed to update: " + err.message);
+      toast.error("Failed to update: " + err.message);
+    }
+  };
+
+  const handleOnboardSubmit = async (staffData) => {
+    try {
+      setOnboardingLoading(true);
+      await ApiService.createStaff(staffData);
+      toast.success("Staff successfully onboarded!");
+      setShowOnboarding(false);
+      onRefresh();
+    } catch (err) {
+      toast.error(err.message || 'Failed to onboard staff');
+    } finally {
+      setOnboardingLoading(false);
     }
   };
 
@@ -67,8 +103,8 @@ const AmbassadorsPage = ({ ambassadors, staff, onRefresh }) => {
               <h1 className="text-xl sm:text-2xl font-bold text-white">Ambassador Registry</h1>
               <p className="text-sm sm:text-base text-gray-500">Manage representative profiles and recruitment data.</p>
             </div>
-            <button 
-              onClick={() => window.open(ApiService.getExportUrl(), '_blank')}
+            <button
+              onClick={() => handleExportStaff(null)}
               className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white px-3 sm:px-4 py-2 rounded-xl border border-gray-700 transition-all text-sm w-full sm:w-auto justify-center"
             >
               <Download className="w-4 h-4" /> Download Master List
@@ -164,6 +200,14 @@ const AmbassadorsPage = ({ ambassadors, staff, onRefresh }) => {
                         className="bg-black border border-gray-700 rounded-lg px-3 py-2 text-white block w-full text-sm sm:text-base"
                         value={editForm.name}
                         onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                        placeholder="Full Name"
+                      />
+                      <input 
+                        type="email"
+                        className="bg-black border border-gray-700 rounded-lg px-3 py-2 text-white block w-full text-sm sm:text-base"
+                        value={editForm.email}
+                        onChange={(e) => setEditForm({...editForm, email: e.target.value})}
+                        placeholder="Email Address"
                       />
                       <select 
                         className="bg-black border border-gray-700 rounded-lg px-3 py-2 text-white block text-sm w-full"
@@ -196,8 +240,16 @@ const AmbassadorsPage = ({ ambassadors, staff, onRefresh }) => {
                     <button onClick={handleStartEdit} className="bg-gray-800 hover:bg-gray-700 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-xl border border-gray-700 flex items-center justify-center gap-2 text-sm flex-1 md:flex-none">
                       <Edit2 className="w-3 h-3 sm:w-4 sm:h-4" /> <span className="hidden sm:inline">Edit Profile</span><span className="sm:hidden">Edit</span>
                     </button>
+                    {['hr', 'director', 'super'].includes(currentUser?.role) && (
+                      <button 
+                        onClick={() => setShowOnboarding(true)}
+                        className="bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-xl shadow-lg border-green-500 font-bold flex items-center justify-center gap-2 text-sm flex-1 md:flex-none"
+                      >
+                        <UserPlus className="w-4 h-4" /> <span className="hidden sm:inline">Onboard Staff</span><span className="sm:hidden">Onboard</span>
+                      </button>
+                    )}
                     <button 
-                      onClick={() => window.open(ApiService.getExportUrl(selectedAmb.id), '_blank')}
+                      onClick={() => handleExportStaff(selectedAmb.id)}
                       className="bg-orange-500 hover:bg-orange-600 text-white px-3 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg text-sm flex-1 md:flex-none"
                     >
                       <Download className="w-4 h-4 sm:w-5 sm:h-5" /> <span className="hidden sm:inline">Export CSV</span><span className="sm:hidden">Export</span>
@@ -391,6 +443,20 @@ const AmbassadorsPage = ({ ambassadors, staff, onRefresh }) => {
               </table>
              </div>
           </div>
+          
+          {/* STAFF ONBOARDING MODAL */}
+          {showOnboarding && (
+            <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-200">
+              <div className="w-full max-w-2xl animate-in zoom-in-95">
+                <OnboardingForm 
+                  currentUser={selectedAmb} /* Tricking OnboardingForm into picking up the Ambassador ID */
+                  onSubmit={handleOnboardSubmit}
+                  onCancel={() => setShowOnboarding(false)}
+                  loading={onboardingLoading}
+                />
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
