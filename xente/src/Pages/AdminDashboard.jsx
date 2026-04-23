@@ -3,12 +3,13 @@ import {
   Users, LogOut, BarChart3, TrendingUp, Mail, MapPin, 
   Menu, X, Home, Search, Calendar, Download, 
   RefreshCw, UserPlus, Trophy, AlertCircle, 
-  Edit2, Trash2, ChevronRight, Shield, Briefcase, FileText
+  Edit2, Trash2, ChevronRight, Shield, Briefcase, FileText, Upload
 } from 'lucide-react';
 import ApiService from '../services/api';
 import AmbassadorsPage from '../Pages/AmbassadorsPage';
 import AdminsPage from '../Pages/AdminsPage';
 import RequisitionsPage from '../Pages/RequisitionsPage';
+import BulkUploadPage from '../Pages/BulkUploadPage';
 
 import { Button, StatCard, LoadingSpinner, ErrorAlert } from '../components/components';
 import { TopPerformerCard } from '../components/TopPerformerCard';
@@ -19,6 +20,7 @@ const getNavItems = (role) => {
     { id: 'ambassadors', label: 'HR / Ambassadors', icon: Users, roles: ['admin', 'super', 'director', 'hr'] },
     { id: 'admins', label: 'System Admins', icon: Briefcase, roles: ['admin', 'super', 'director', 'hr', 'finance'] },
     { id: 'requisitions', label: 'Requisitions', icon: FileText, roles: ['admin', 'super', 'director', 'hr', 'finance'] },
+    { id: 'bulk-upload', label: 'Bulk Upload', icon: Upload, roles: ['admin', 'super', 'director', 'hr'] },
     { id: 'finance', label: 'Finance Hub', icon: BarChart3, roles: ['super', 'director', 'finance'] }
   ];
   return items.filter(item => item.roles.includes(role || 'admin'));
@@ -259,6 +261,11 @@ export const AdminDashboard = ({ currentUser, onLogout }) => {
               {/* --- REQUISITIONS TAB --- */}
               {activeTab === 'requisitions' && (
                 <RequisitionsPage currentUser={currentUser} />
+              )}
+
+              {/* --- BULK UPLOAD TAB --- */}
+              {activeTab === 'bulk-upload' && (
+                <BulkUploadPage currentUser={currentUser} />
               )}
               
               {/* --- FINANCE TAB --- */}

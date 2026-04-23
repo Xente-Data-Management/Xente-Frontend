@@ -215,6 +215,29 @@ class ApiService {
       body: JSON.stringify({ status, notes }) 
     });
   }
+
+  // ============================================
+  // BULK UPLOAD
+  // ============================================
+  static async uploadStaffCsv(file, ambassadorId, ambassadorName) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('ambassadorId', ambassadorId);
+    formData.append('ambassadorName', ambassadorName);
+
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/staff/upload`, {
+      method: 'POST',
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+      body: formData
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.error || 'Upload failed');
+    }
+    return response.json();
+  }
 }
 
 export default ApiService;
