@@ -57,10 +57,22 @@ export const LoginPage = ({ onLogin, loading, error }) => {
       </div>
 
       {/* Right Panel - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
-        <div className="w-full max-w-[420px]">
+      {/* Right Panel - Image background + Card */}
+      <div
+        className="w-full lg:w-1/2 relative flex items-center justify-center p-6 sm:p-10 min-h-screen lg:min-h-0"
+        style={{
+          backgroundImage: "url('/xenteloginimge.jpeg')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-black/50" />
+
+        {/* Floating form card */}
+        <div className="relative z-10 w-full max-w-[420px] bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl shadow-black/30 p-8 sm:p-10">
           {/* Mobile logo */}
-          <div className="lg:hidden flex justify-center mb-10">
+          <div className="lg:hidden flex justify-center mb-8">
             <img src="/xenteLogo2.png" alt="Xente" className="h-9" />
           </div>
 
