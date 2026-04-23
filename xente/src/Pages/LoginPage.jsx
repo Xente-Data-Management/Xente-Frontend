@@ -21,7 +21,7 @@ export const LoginPage = ({ onLogin, loading, error }) => {
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
           {/* Logo */}
           <div>
-            <img src="/xenteLogo2.png" alt="Xente" className="h-10 brightness-0 invert" />
+            <img src="/xenteLogo2.png" alt="Xente" className="h-10" />
           </div>
 
           {/* Hero text */}

@@ -61,7 +61,7 @@ export const SplashScreen = ({ onFinish }) => {
 
         {/* Main content */}
         <div className="text-center animate-scale-in">
-          <img src="/xenteLogo2.png" alt="Xente Logo" className="h-14 sm:h-16 w-auto mx-auto mb-8 object-contain brightness-0 invert" />
+          <img src="/xenteLogo2.png" alt="Xente Logo" className="h-14 sm:h-16 w-auto mx-auto mb-8 object-contain" />
 
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-tight mb-4 tracking-tight">
             Ambassador <span className="text-orange-400">Onboarding</span>
