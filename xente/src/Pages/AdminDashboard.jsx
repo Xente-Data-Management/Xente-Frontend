@@ -10,6 +10,7 @@ import AmbassadorsPage from '../Pages/AmbassadorsPage';
 import AdminsPage from '../Pages/AdminsPage';
 import RequisitionsPage from '../Pages/RequisitionsPage';
 import BulkUploadPage from '../Pages/BulkUploadPage';
+import PaymentQueuePage from '../Pages/PaymentQueuePage';
 
 import { Button, StatCard, LoadingSpinner, ErrorAlert } from '../components/components';
 import { TopPerformerCard } from '../components/TopPerformerCard';
@@ -17,10 +18,11 @@ import { TopPerformerCard } from '../components/TopPerformerCard';
 const getNavItems = (role) => {
   const items = [
     { id: 'dashboard', label: 'Overview', icon: Home, roles: ['admin', 'super', 'director', 'hr', 'finance'] },
-    { id: 'ambassadors', label: 'HR / Ambassadors', icon: Users, roles: ['admin', 'super', 'director', 'hr'] },
+    { id: 'ambassadors', label: 'Ambassadors', icon: Users, roles: ['admin', 'super', 'director', 'hr'] },
     { id: 'admins', label: 'System Admins', icon: Briefcase, roles: ['admin', 'super', 'director', 'hr', 'finance'] },
     { id: 'requisitions', label: 'Requisitions', icon: FileText, roles: ['admin', 'super', 'director', 'hr', 'finance'] },
     { id: 'bulk-upload', label: 'Bulk Upload', icon: Upload, roles: ['admin', 'super', 'director', 'hr'] },
+    { id: 'queue', label: 'Payment Queue', icon: Trophy, roles: ['admin', 'super', 'director', 'hr', 'finance'] },
     { id: 'finance', label: 'Finance Hub', icon: BarChart3, roles: ['super', 'director', 'finance'] }
   ];
   return items.filter(item => item.roles.includes(role || 'admin'));
@@ -126,10 +128,7 @@ export const AdminDashboard = ({ currentUser, onLogout }) => {
       <aside className={`fixed lg:static inset-y-0 left-0 w-64 bg-gray-950 border-r border-gray-800 z-50 transform transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         <div className="flex flex-col h-full p-6">
           <div className="flex items-center gap-3 mb-10">
-            <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
-              <Shield className="text-white w-6 h-6" />
-            </div>
-            <span className="text-white font-bold text-xl">Admin<span className="text-orange-500">HQ</span></span>
+            <img src="/xenteLogo2.png" alt="Xente" className="h-8 w-auto" />
           </div>
           
           <nav className="flex-1 space-y-2">
@@ -154,7 +153,17 @@ export const AdminDashboard = ({ currentUser, onLogout }) => {
         <header className="h-20 border-b border-gray-800 flex items-center justify-between px-8 bg-gray-950/50 backdrop-blur-md flex-shrink-0">
           <div className="flex items-center gap-4">
             <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden text-gray-400"><Menu /></button>
-            <h2 className="text-lg font-semibold text-white uppercase tracking-wider">{activeTab}</h2>
+            <h2 className="text-lg font-semibold text-white uppercase tracking-wider">
+              {{
+                dashboard: 'Overview',
+                ambassadors: 'Ambassadors',
+                admins: 'System Admins',
+                requisitions: 'Requisitions',
+                'bulk-upload': 'Bulk Upload',
+                queue: 'Payment Queue',
+                finance: 'Finance Hub',
+              }[activeTab] || activeTab}
+            </h2>
           </div>
           {activeTab === 'ambassadors' && ['hr', 'director', 'super'].includes(currentUser?.role) && (
             <Button onClick={() => { setSelectedAmbassadorForModal(null); setModalMode('create'); setShowModal(true); }} icon={UserPlus}>Add Ambassador</Button>
@@ -267,7 +276,12 @@ export const AdminDashboard = ({ currentUser, onLogout }) => {
               {activeTab === 'bulk-upload' && (
                 <BulkUploadPage currentUser={currentUser} />
               )}
-              
+
+              {/* --- PAYMENT QUEUE TAB --- */}
+              {activeTab === 'queue' && (
+                <PaymentQueuePage ambassadors={ambassadors} loading={loading} />
+              )}
+
               {/* --- FINANCE TAB --- */}
               {activeTab === 'finance' && (
                 <div className="flex flex-col items-center justify-center p-12 text-center h-96 border border-gray-800 rounded-3xl bg-gray-900/50">

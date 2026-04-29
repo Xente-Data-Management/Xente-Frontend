@@ -43,7 +43,7 @@ class ApiService {
     const response = await fetch(`${API_BASE_URL}/users/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
+      body: JSON.stringify({ email, password })
     });
     
     if (!response.ok) {
@@ -75,6 +75,12 @@ class ApiService {
 
   static logout() {
     localStorage.removeItem('token');
+  }
+
+  static async getPublicStats() {
+    const response = await fetch(`${API_BASE_URL}/users/stats/public`);
+    if (!response.ok) throw new Error('Failed to fetch stats');
+    return response.json();
   }
 
   // ============================================

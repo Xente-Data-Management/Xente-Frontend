@@ -1,13 +1,34 @@
-import React, { useState } from 'react';
-import { Mail, ArrowRight, Shield, Users, TrendingUp, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Mail, Lock, ArrowRight, Shield, Users, TrendingUp, Loader2 } from 'lucide-react';
+import ApiService from '../services/api';
 
 export const LoginPage = ({ onLogin, loading, error }) => {
   const [email, setEmail] = useState('');
-  const [focused, setFocused] = useState(false);
+  const [password, setPassword] = useState('');
+  const [emailFocused, setEmailFocused] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
+  const [stats, setStats] = useState({ totalStaff: 0, growthRate: 0 });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await ApiService.getPublicStats();
+        if (response.success && response.stats) {
+          setStats({
+            totalStaff: response.stats.totalStaff || 0,
+            growthRate: response.stats.growthRate || 0
+          });
+        }
+      } catch (err) {
+        console.error('Failed to fetch public stats:', err);
+      }
+    };
+    fetchStats();
+  }, []);
 
   const handleSubmit = (e) => {
     e?.preventDefault();
-    if (email) onLogin(email);
+    if (email && password) onLogin(email, password);
   };
 
   return (
@@ -36,14 +57,16 @@ export const LoginPage = ({ onLogin, loading, error }) => {
 
             {/* Stat cards */}
             <div className="flex gap-3 mt-10">
-              <div className="bg-white/[0.06] border border-white/[0.08] rounded-2xl px-5 py-4 flex-1 backdrop-blur-sm">
+              <div className="bg-white/[0.06] border border-white/[0.08] rounded-2xl px-5 py-4 flex-1 backdrop-blur-sm transition-all duration-300 hover:shadow-[0_0_20px_rgba(249,115,22,0.3)] hover:-translate-y-1">
                 <Users className="w-5 h-5 text-orange-500 mb-2" />
-                <p className="text-[22px] font-extrabold text-white">2,847</p>
+                <p className="text-[22px] font-extrabold text-white">{stats.totalStaff.toLocaleString()}</p>
                 <p className="text-[11px] text-gray-500 uppercase tracking-wider">Staff Onboarded</p>
               </div>
-              <div className="bg-white/[0.06] border border-white/[0.08] rounded-2xl px-5 py-4 flex-1 backdrop-blur-sm">
+              <div className="bg-white/[0.06] border border-white/[0.08] rounded-2xl px-5 py-4 flex-1 backdrop-blur-sm transition-all duration-300 hover:shadow-[0_0_20px_rgba(249,115,22,0.3)] hover:-translate-y-1">
                 <TrendingUp className="w-5 h-5 text-orange-500 mb-2" />
-                <p className="text-[22px] font-extrabold text-white">+12.5%</p>
+                <p className="text-[22px] font-extrabold text-white">
+                  {Number(stats.growthRate) > 0 ? '+' : ''}{Number(stats.growthRate).toFixed(1)}%
+                </p>
                 <p className="text-[11px] text-gray-500 uppercase tracking-wider">Growth Rate</p>
               </div>
             </div>
@@ -56,7 +79,6 @@ export const LoginPage = ({ onLogin, loading, error }) => {
         </div>
       </div>
 
-      {/* Right Panel - Login Form */}
       {/* Right Panel - Image background + Card */}
       <div
         className="w-full lg:w-1/2 relative flex items-center justify-center p-6 sm:p-10 min-h-screen lg:min-h-0"
@@ -106,12 +128,35 @@ export const LoginPage = ({ onLogin, loading, error }) => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit(e); }}
-                  onFocus={() => setFocused(true)}
-                  onBlur={() => setFocused(false)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && email && password) handleSubmit(e); }}
+                  onFocus={() => setEmailFocused(true)}
+                  onBlur={() => setEmailFocused(false)}
                   placeholder="you@company.com"
                   className={`w-full py-3.5 pl-12 pr-4 text-sm text-gray-900 bg-white border-2 rounded-xl outline-none transition-all duration-200 ${
-                    focused
+                    emailFocused
+                      ? 'border-orange-500 shadow-[0_0_0_4px_rgba(249,115,22,0.1)]'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[13px] font-semibold text-gray-700 mb-2 uppercase tracking-wider">
+                Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-gray-400" />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && email && password) handleSubmit(e); }}
+                  onFocus={() => setPasswordFocused(true)}
+                  onBlur={() => setPasswordFocused(false)}
+                  placeholder="••••••••"
+                  className={`w-full py-3.5 pl-12 pr-4 text-sm text-gray-900 bg-white border-2 rounded-xl outline-none transition-all duration-200 ${
+                    passwordFocused
                       ? 'border-orange-500 shadow-[0_0_0_4px_rgba(249,115,22,0.1)]'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
@@ -121,9 +166,9 @@ export const LoginPage = ({ onLogin, loading, error }) => {
 
             <button
               type="submit"
-              disabled={loading || !email}
-              className={`w-full py-4 px-6 text-white text-sm font-bold rounded-xl flex items-center justify-center gap-2.5 transition-all duration-200 ${
-                loading || !email
+              disabled={loading || !email || !password}
+              className={`w-full py-4 px-6 text-white text-sm font-bold rounded-xl flex items-center justify-center gap-2.5 transition-all duration-200 mt-2 ${
+                loading || !email || !password
                   ? 'bg-orange-300 cursor-not-allowed'
                   : 'bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg shadow-orange-500/35 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-orange-500/40 active:translate-y-0'
               }`}
@@ -143,13 +188,13 @@ export const LoginPage = ({ onLogin, loading, error }) => {
           </form>
 
           {/* Demo credentials */}
-          <div className="mt-10 px-5 py-4 bg-orange-50 border border-orange-200 rounded-xl">
+          <div className="mt-8 px-5 py-4 bg-orange-50 border border-orange-200 rounded-xl">
             <p className="text-xs font-bold text-amber-800 uppercase tracking-wider mb-2">
               Demo Credentials
             </p>
-            <p className="text-[13px] text-amber-900">
+            <p className="text-[13px] text-amber-900 mb-1">
               <span className="font-semibold">Admin:</span>{' '}
-              <span className="font-mono bg-orange-100 px-1.5 py-0.5 rounded-md text-xs">admin@example.com</span>
+              <span className="font-mono bg-orange-100 px-1.5 py-0.5 rounded-md text-xs">admin@example.com</span> / <span className="font-mono bg-orange-100 px-1.5 py-0.5 rounded-md text-xs">admin123</span>
             </p>
           </div>
 

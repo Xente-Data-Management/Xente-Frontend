@@ -14,11 +14,11 @@ export default function App() {
   const [error, setError] = useState('');
   const [showSplash, setShowSplash] = useState(true);
 
-  const handleLogin = async (email) => {
+  const handleLogin = async (email, password) => {
     try {
       setLoading(true);
       setError('');
-      const data = await ApiService.login(email);
+      const data = await ApiService.login(email, password);
       setCurrentUser(data.user);
     } catch (err) {
       setError(err.message);
@@ -60,10 +60,10 @@ export default function App() {
           <Route path="/" element={
             !currentUser ? (
               <LoginPage onLogin={handleLogin} loading={loading} error={error} />
-            ) : (currentUser.role === 'admin' || currentUser.role === 'super') ? (
-              <AdminDashboard currentUser={currentUser} onLogout={handleLogout} />
-            ) : (
+            ) : currentUser.role === 'ambassador' ? (
               <AmbassadorDashboard currentUser={currentUser} onLogout={handleLogout} />
+            ) : (
+              <AdminDashboard currentUser={currentUser} onLogout={handleLogout} />
             )
           } />
 
