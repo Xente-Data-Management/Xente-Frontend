@@ -223,6 +223,24 @@ class ApiService {
   }
 
   // ============================================
+  // LEAVE REQUEST ENDPOINTS
+  // ============================================
+  static async createLeaveRequest(data) {
+    return this.request('/leave', { method: 'POST', body: JSON.stringify(data) });
+  }
+
+  static async getAllLeaveRequests() {
+    return this.request('/leave');
+  }
+
+  static async updateLeaveStatus(id, status, reviewNotes = '') {
+    return this.request(`/leave/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status, reviewNotes })
+    });
+  }
+
+  // ============================================
   // BULK UPLOAD
   // ============================================
   static async uploadStaffCsv(file, ambassadorId, ambassadorName) {

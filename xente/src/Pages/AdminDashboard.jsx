@@ -15,13 +15,18 @@ import PaymentQueuePage from '../Pages/PaymentQueuePage';
 import { Button, StatCard, LoadingSpinner, ErrorAlert } from '../components/components';
 import { TopPerformerCard } from '../components/TopPerformerCard';
 
+import LeaveRequestsPage from './LeaveRequestsPage';
+import AllStaffPage from './AllStaffPage';
+
 const getNavItems = (role) => {
   const items = [
     { id: 'dashboard', label: 'Overview', icon: Home, roles: ['admin', 'super', 'director', 'hr', 'finance'] },
     { id: 'ambassadors', label: 'Ambassadors', icon: Users, roles: ['admin', 'super', 'director', 'hr'] },
-    { id: 'admins', label: 'System Admins', icon: Briefcase, roles: ['admin', 'super', 'director', 'hr', 'finance'] },
+    { id: 'all-staff', label: 'All Staff', icon: Users, roles: ['super', 'director', 'hr'] },
+    { id: 'admins', label: 'System Admins', icon: Briefcase, roles: ['admin', 'super', 'hr'] },
+    { id: 'leave', label: 'Leave Requests', icon: Calendar, roles: ['admin', 'super', 'director', 'hr', 'finance'] },
     { id: 'requisitions', label: 'Requisitions', icon: FileText, roles: ['admin', 'super', 'director', 'hr', 'finance'] },
-    { id: 'bulk-upload', label: 'Bulk Upload', icon: Upload, roles: ['admin', 'super', 'director', 'hr'] },
+    { id: 'bulk-upload', label: 'Bulk Upload', icon: Upload, roles: ['admin', 'super', 'hr'] },
     { id: 'queue', label: 'Payment Queue', icon: Trophy, roles: ['admin', 'super', 'director', 'hr', 'finance'] },
     { id: 'finance', label: 'Finance Hub', icon: BarChart3, roles: ['super', 'director', 'finance'] }
   ];
@@ -294,7 +299,17 @@ export const AdminDashboard = ({ currentUser, onLogout }) => {
 
               {/* --- PAYMENT QUEUE TAB --- */}
               {activeTab === 'queue' && (
-                <PaymentQueuePage ambassadors={ambassadors} loading={loading} />
+                <PaymentQueuePage ambassadors={ambassadors} loading={loading} currentUser={currentUser} />
+              )}
+
+              {/* --- LEAVE REQUESTS TAB --- */}
+              {activeTab === 'leave' && (
+                <LeaveRequestsPage currentUser={currentUser} />
+              )}
+
+              {/* --- ALL STAFF TAB --- */}
+              {activeTab === 'all-staff' && (
+                <AllStaffPage />
               )}
 
               {/* --- FINANCE TAB --- */}
