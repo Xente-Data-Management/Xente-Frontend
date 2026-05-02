@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Users, Search, Download, ChevronRight, ArrowLeft, 
-  MapPin, Mail, Calendar, Edit2, Check, X, Filter, Phone 
+  MapPin, Mail, Calendar, Edit2, Check, X, Filter, Phone, Hash 
 } from 'lucide-react';
 import ApiService from '../services/api';
 import toast from 'react-hot-toast';
@@ -137,7 +137,14 @@ const AmbassadorsPage = ({ ambassadors, staff, onRefresh, currentUser }) => {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-bold text-white truncate">{amb.name}</p>
                       <p className="text-xs text-gray-500 truncate">{amb.email}</p>
-                      <p className="text-xs text-gray-400 mt-1">{amb.region}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <p className="text-xs text-gray-400">{amb.region}</p>
+                        {amb.ambassador_code && (
+                          <span className="text-[10px] font-mono font-bold text-orange-500 bg-orange-500/10 px-1.5 py-0.5 rounded border border-orange-500/20">
+                            {amb.ambassador_code}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 flex-shrink-0">
@@ -158,6 +165,7 @@ const AmbassadorsPage = ({ ambassadors, staff, onRefresh, currentUser }) => {
                 <thead>
                   <tr className="bg-black/40 text-gray-500 text-[10px] uppercase tracking-widest font-bold">
                     <th className="px-8 py-5">Representative</th>
+                    <th className="px-8 py-5">Code</th>
                     <th className="px-8 py-5">Region</th>
                     <th className="px-8 py-5 text-center">Recruits</th>
                     <th className="px-8 py-5"></th>
@@ -169,6 +177,15 @@ const AmbassadorsPage = ({ ambassadors, staff, onRefresh, currentUser }) => {
                       <td className="px-8 py-5 flex items-center gap-4">
                         <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-orange-500 font-bold border border-gray-700 group-hover:border-orange-500/50">{amb.name.charAt(0)}</div>
                         <div><p className="text-sm font-bold text-white">{amb.name}</p><p className="text-xs text-gray-500">{amb.email}</p></div>
+                      </td>
+                      <td className="px-8 py-5">
+                        {amb.ambassador_code ? (
+                          <span className="font-mono text-xs font-bold text-orange-500 bg-orange-500/10 px-2.5 py-1 rounded-lg border border-orange-500/20">
+                            {amb.ambassador_code}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-600">—</span>
+                        )}
                       </td>
                       <td className="px-8 py-5 text-sm text-gray-400">{amb.region}</td>
                       <td className="px-8 py-5 text-center"><span className="bg-gray-800 text-orange-500 px-3 py-1 rounded-lg text-xs font-bold">{amb.totalStaff || 0}</span></td>

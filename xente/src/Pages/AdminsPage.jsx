@@ -1,8 +1,41 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, UserPlus, Trash2, Mail, AlertCircle, CheckCircle, Send } from 'lucide-react';
+import { Shield, UserPlus, Trash2, Mail, AlertCircle, CheckCircle, Send, X, Hash } from 'lucide-react';
 import ApiService from '../services/api';
 
-const AdminsPage = () => {
+const ROLE_CONFIG = {
+  super: { 
+    label: 'Super Admin', 
+    color: 'orange',
+    classes: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
+    icon: '👑'
+  },
+  admin: { 
+    label: 'Admin', 
+    color: 'blue',
+    classes: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+    icon: '🛡️'
+  },
+  director: { 
+    label: 'Director', 
+    color: 'purple',
+    classes: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
+    icon: '🏛️'
+  },
+  hr: { 
+    label: 'HR Manager', 
+    color: 'green',
+    classes: 'bg-green-500/10 text-green-500 border-green-500/20',
+    icon: '👥'
+  },
+  finance: { 
+    label: 'Finance', 
+    color: 'yellow',
+    classes: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
+    icon: '💰'
+  }
+};
+
+const AdminsPage = ({ currentUser }) => {
   const [admins, setAdmins] = useState([]);
   const [showCreate, setShowCreate] = useState(false);
   const [msg, setMsg] = useState(null);
@@ -24,7 +57,6 @@ const AdminsPage = () => {
     const data = Object.fromEntries(formData);
     
     try {
-      // This will now send just Name, Email, and Role to your backend
       const response = await ApiService.createAdmin(data); 
       setMsg({ 
         type: 'success', 
@@ -49,6 +81,8 @@ const AdminsPage = () => {
     }
   };
 
+  const getRoleInfo = (role) => ROLE_CONFIG[role] || ROLE_CONFIG.admin;
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -60,7 +94,7 @@ const AdminsPage = () => {
           onClick={() => setShowCreate(true)}
           className="flex items-center gap-2 bg-orange-500 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20"
         >
-          <UserPlus className="w-4 h-4" /> Invite New Admin
+          <UserPlus className="w-4 h-4" /> Invite Team Member
         </button>
       </div>
 
@@ -82,59 +116,68 @@ const AdminsPage = () => {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {admins.map(admin => (
-          <div key={admin.id} className="bg-gray-900 border border-gray-800 p-6 rounded-3xl relative overflow-hidden group hover:border-gray-700 transition-colors">
-            <Shield className="absolute -right-4 -bottom-4 w-24 h-24 text-white/5 group-hover:text-orange-500/10 transition-colors" />
-            
-            <div className="flex justify-between items-start mb-4">
-              <div className="w-12 h-12 bg-gray-800 rounded-2xl flex items-center justify-center text-orange-500 border border-gray-700">
-                <Shield className="w-6 h-6" />
-              </div>
-              <button 
-                onClick={() => deleteAdmin(admin.id)} 
-                className="text-gray-600 hover:text-red-500 transition-colors p-2 bg-gray-800/50 rounded-lg"
-                title="Revoke Access"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="relative z-10">
-              <h3 className="text-white font-bold text-lg leading-tight">{admin.name}</h3>
-              <p className="text-gray-500 text-sm flex items-center gap-2 mt-1 mb-4">
-                <Mail className="w-3.5 h-3.5" /> {admin.email}
-              </p>
+        {admins.map(admin => {
+          const roleInfo = getRoleInfo(admin.role);
+          return (
+            <div key={admin.id} className="bg-gray-900 border border-gray-800 p-6 rounded-3xl relative overflow-hidden group hover:border-gray-700 transition-colors">
+              <Shield className="absolute -right-4 -bottom-4 w-24 h-24 text-white/5 group-hover:text-orange-500/10 transition-colors" />
               
-              <div className="flex items-center justify-between pt-4 border-t border-gray-800">
-                <span className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-full border ${
-                  admin.role === 'super' 
-                  ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' 
-                  : 'bg-blue-500/10 text-blue-500 border-blue-500/20'
-                }`}>
-                  {admin.role === 'super' ? 'Super Admin' : 'Standard Admin'}
-                </span>
-                <span className="text-[10px] text-gray-600 font-medium">Joined {new Date(admin.created_at || Date.now()).toLocaleDateString()}</span>
+              <div className="flex justify-between items-start mb-4">
+                <div className="w-12 h-12 bg-gray-800 rounded-2xl flex items-center justify-center text-xl border border-gray-700">
+                  {roleInfo.icon}
+                </div>
+                <button 
+                  onClick={() => deleteAdmin(admin.id)} 
+                  className="text-gray-600 hover:text-red-500 transition-colors p-2 bg-gray-800/50 rounded-lg"
+                  title="Revoke Access"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="relative z-10">
+                <h3 className="text-white font-bold text-lg leading-tight">{admin.name}</h3>
+                <p className="text-gray-500 text-sm flex items-center gap-2 mt-1">
+                  <Mail className="w-3.5 h-3.5" /> {admin.email}
+                </p>
+                
+                {/* Admin Code */}
+                {admin.ambassador_code && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <Hash className="w-3 h-3 text-gray-600" />
+                    <span className="text-xs font-mono font-bold text-orange-500 bg-orange-500/10 px-2 py-0.5 rounded border border-orange-500/20">
+                      {admin.ambassador_code}
+                    </span>
+                  </div>
+                )}
+                
+                <div className="flex items-center justify-between pt-4 mt-4 border-t border-gray-800">
+                  <span className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-full border ${roleInfo.classes}`}>
+                    {roleInfo.label}
+                  </span>
+                  <span className="text-[10px] text-gray-600 font-medium">Joined {new Date(admin.created_at || Date.now()).toLocaleDateString()}</span>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* INVITE ADMIN MODAL (No Password Field) */}
+      {/* INVITE ADMIN MODAL */}
       {showCreate && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-200">
-          <form onSubmit={handleInviteAdmin} className="w-full max-w-md bg-gray-900 border border-gray-800 rounded-3xl p-8 space-y-6 shadow-2xl animate-in zoom-in-95">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setShowCreate(false)}>
+          <form onClick={(e) => e.stopPropagation()} onSubmit={handleInviteAdmin} className="w-full max-w-md bg-gray-900 border border-gray-800 rounded-3xl p-8 space-y-6 shadow-2xl animate-in zoom-in-95">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <Send className="text-orange-500 w-5 h-5" /> Invite Administrator
+                <Send className="text-orange-500 w-5 h-5" /> Invite Team Member
               </h2>
               <button type="button" onClick={() => setShowCreate(false)} className="text-gray-500 hover:text-white transition-colors">
-                <Trash2 className="w-5 h-5 rotate-45" /> {/* Using Trash as an X icon replacement or just import X */}
+                <X className="w-5 h-5" />
               </button>
             </div>
 
             <p className="text-sm text-gray-500">
-              Enter the details below. We will send an email to this address with instructions to set up their account.
+              Enter the details below. We will send an email with instructions to set up their account and access the dashboard.
             </p>
 
             <div className="space-y-4">
@@ -160,14 +203,35 @@ const AdminsPage = () => {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-500 uppercase ml-1">Access Level</label>
+                <label className="text-[10px] font-bold text-gray-500 uppercase ml-1">Access Level / Role</label>
                 <select 
                   name="role" 
                   className="w-full bg-black border border-gray-800 rounded-xl px-4 py-3 text-white outline-none focus:border-orange-500 transition-all appearance-none cursor-pointer"
                 >
-                  <option value="admin">Standard Admin (View & Edit Staff)</option>
-                  <option value="super">Super Admin (Can manage other Admins)</option>
+                  <option value="admin">Admin — View & Edit Staff</option>
+                  <option value="super">Super Admin — Full System Access</option>
+                  <option value="director">Director — Approve Requisitions & Plans</option>
+                  <option value="hr">HR Manager — Staff & Ambassador Management</option>
+                  <option value="finance">Finance — Payments & Financial Reports</option>
                 </select>
+              </div>
+
+              {/* Role descriptions */}
+              <div className="bg-black/40 rounded-xl p-3 border border-gray-800">
+                <p className="text-[10px] text-gray-500 uppercase font-bold mb-2">Role Code Prefixes</p>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {Object.entries(ROLE_CONFIG).map(([key, config]) => (
+                    <div key={key} className="flex items-center gap-2">
+                      <span className="text-xs">{config.icon}</span>
+                      <span className="text-[10px] text-gray-400">
+                        <span className="font-mono text-orange-500/70 font-bold">
+                          {key === 'super' ? 'XSA' : key === 'admin' ? 'XAD' : key === 'director' ? 'XDR' : key === 'hr' ? 'XHR' : 'XFN'}
+                        </span>
+                        {' '}{config.label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 

@@ -3,7 +3,7 @@ import {
   Users, LogOut, BarChart3, TrendingUp, Mail, MapPin, 
   Menu, X, Home, Search, Calendar, Download, 
   RefreshCw, UserPlus, Trophy, AlertCircle, 
-  Edit2, Trash2, ChevronRight, Shield, Briefcase, FileText, Upload
+  Edit2, Trash2, ChevronRight, Shield, Briefcase, FileText, Upload, User
 } from 'lucide-react';
 import ApiService from '../services/api';
 import AmbassadorsPage from '../Pages/AmbassadorsPage';
@@ -31,6 +31,7 @@ const getNavItems = (role) => {
 export const AdminDashboard = ({ currentUser, onLogout }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState('create');
   const [selectedAmbassadorForModal, setSelectedAmbassadorForModal] = useState(null);
@@ -143,7 +144,21 @@ export const AdminDashboard = ({ currentUser, onLogout }) => {
             ))}
           </nav>
           
-          <div className="pt-6 border-t border-gray-800">
+          <div className="pt-6 border-t border-gray-800 space-y-3">
+            {/* Logged-in User Card */}
+            <button
+              onClick={() => setShowProfileModal(true)}
+              className="w-full flex items-center gap-3 p-3 rounded-xl bg-gray-900/60 border border-gray-800 hover:border-orange-500/40 hover:bg-gray-900 transition-all group cursor-pointer"
+            >
+              <div className="w-9 h-9 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-500 font-bold text-sm border border-orange-500/20 group-hover:bg-orange-500/20 transition-colors">
+                {currentUser?.name?.charAt(0)?.toUpperCase() || 'U'}
+              </div>
+              <div className="flex-1 text-left min-w-0">
+                <p className="text-sm font-semibold text-white truncate">{currentUser?.name || 'User'}</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-orange-500">{currentUser?.role || 'admin'}</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-orange-500 transition-colors flex-shrink-0" />
+            </button>
             <Button variant="danger" className="w-full" icon={LogOut} onClick={onLogout}>Sign Out</Button>
           </div>
         </div>
@@ -364,6 +379,62 @@ export const AdminDashboard = ({ currentUser, onLogout }) => {
                 {deleteLoading ? 'Deleting...' : 'Delete'}
               </Button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* USER PROFILE MODAL */}
+      {showProfileModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setShowProfileModal(false)}>
+          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-sm bg-gray-900 border border-gray-800 rounded-3xl p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-lg font-bold text-white">My Profile</h2>
+              <button onClick={() => setShowProfileModal(false)} className="text-gray-500 hover:text-white transition-colors"><X className="w-5 h-5" /></button>
+            </div>
+
+            <div className="flex flex-col items-center text-center mb-8">
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-3xl font-bold text-white shadow-2xl shadow-orange-500/30 mb-4">
+                {currentUser?.name?.charAt(0)?.toUpperCase() || 'U'}
+              </div>
+              <h3 className="text-xl font-bold text-white">{currentUser?.name || 'User'}</h3>
+              <span className="mt-1.5 inline-flex items-center gap-1.5 bg-orange-500/10 border border-orange-500/20 text-orange-500 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider">
+                <Shield className="w-3 h-3" />
+                {currentUser?.role || 'Admin'}
+              </span>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 bg-black/40 rounded-xl px-4 py-3 border border-gray-800">
+                <Mail className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                <div>
+                  <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Email</p>
+                  <p className="text-sm text-white">{currentUser?.email || 'N/A'}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 bg-black/40 rounded-xl px-4 py-3 border border-gray-800">
+                <User className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                <div>
+                  <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">User ID</p>
+                  <p className="text-sm text-white font-mono truncate">{currentUser?.id?.slice(0, 12) || 'N/A'}...</p>
+                </div>
+              </div>
+              {currentUser?.region && (
+                <div className="flex items-center gap-3 bg-black/40 rounded-xl px-4 py-3 border border-gray-800">
+                  <MapPin className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                  <div>
+                    <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Region</p>
+                    <p className="text-sm text-white">{currentUser.region}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={() => setShowProfileModal(false)}
+              className="w-full mt-6 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-xl text-sm font-semibold transition-colors border border-gray-700"
+            >
+              Close
+            </button>
           </div>
         </div>
       )}
